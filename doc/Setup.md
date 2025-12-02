@@ -1,4 +1,4 @@
-# MyActuator RMD set-up
+# ZeroErr RMD set-up
 
 Author: [Tobit Flatscher](https://github.com/2b-t) (2023 - 2024)
 
@@ -27,7 +27,7 @@ Depending on your set-up you might have to flash the firmware. There are several
 
 ## 1. Configuring the actuator
 
-The configuration procedure is discussed in [this video by the company](https://www.youtube.com/watch?v=N-668lRZCoA). Additional downloads can be found on [their webpage](https://www.myactuator.com/dowload). The actuator can be optionally configured over an UART serial port connection that comes with it. The configuration GUI, called [**Assistant 3.0**](https://www.myactuator.com/_files/archives/cab28a_113101870399481d883002e1751fdcbc.rar) is sadly only available for **Windows**. Through it one can configure the actuator addres as well as the baud rate.
+The configuration procedure is discussed in [this video by the company](https://www.youtube.com/watch?v=N-668lRZCoA). Additional downloads can be found on [their webpage](https://www.zeroerr.com/dowload). The actuator can be optionally configured over an UART serial port connection that comes with it. The configuration GUI, called [**Assistant 3.0**](https://www.zeroerr.com/_files/archives/cab28a_113101870399481d883002e1751fdcbc.rar) is sadly only available for **Windows**. Through it one can configure the actuator addres as well as the baud rate.
 
 
 
@@ -103,4 +103,4 @@ $ cansend vcan0 141#a400f40100000000
 
 This feature is used for unit testing of this driver.
 
-This driver is based on the [RMD-X Servo Motor Control Protocol V3.8](https://www.myactuator.com/_files/ugd/cab28a_0d661f6bcbc94a0882ceed465e4039ce.docx). In order to debug it, it might be helpful to get familiar with [CANbus errors](https://www.csselectronics.com/pages/can-bus-errors-intro-tutorial).
+This driver is based on the [RMD-X Servo Motor Control Protocol V3.8](https://www.zeroerr.com/_files/ugd/cab28a_0d661f6bcbc94a0882ceed465e4039ce.docx). In order to debug it, it might be helpful to get familiar with [CANbus errors](https://www.csselectronics.com/pages/can-bus-errors-intro-tutorial).

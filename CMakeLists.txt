@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(myactuator_rmd VERSION 0.0.1)
+project(zeroerr_rmd VERSION 0.0.1)
 
 option(PYTHON_BINDINGS "Building Python bindings" OFF)
 option(BUILD_TESTING "Build unit and integration tests" OFF)
@@ -24,28 +24,26 @@ if(ament_cmake_FOUND)
   message(STATUS "Ament CMake detected.")
 endif()
 
-add_library(myactuator_rmd SHARED
+add_library(zeroerr_rmd SHARED
   src/can/node.cpp
   src/can/utilities.cpp
-  src/protocol/requests.cpp
-  src/protocol/responses.cpp
   src/actuator_interface.cpp
 )
-target_compile_features(myactuator_rmd PUBLIC
+target_compile_features(zeroerr_rmd PUBLIC
   cxx_std_17
 )
-target_include_directories(myactuator_rmd PUBLIC
+target_include_directories(zeroerr_rmd PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-set(MYACTUATOR_RMD_LIBRARIES "")
-target_link_libraries(myactuator_rmd PUBLIC 
-  ${MYACTUATOR_RMD_LIBRARIES}
+set(ZEROERR_RMD_LIBRARIES "")
+target_link_libraries(zeroerr_rmd PUBLIC 
+  ${ZEROERR_RMD_LIBRARIES}
 )
 install(DIRECTORY include/
   DESTINATION include/
 )
-install(TARGETS myactuator_rmd
+install(TARGETS zeroerr_rmd
   EXPORT ${PROJECT_NAME}Targets
   RUNTIME DESTINATION bin
   ARCHIVE DESTINATION lib
@@ -59,21 +57,21 @@ if(PYTHON_BINDINGS)
   )
   find_package(pybind11 CONFIG REQUIRED)
 
-  pybind11_add_module(myactuator_rmd_py
-    bindings/myactuator_rmd.cpp
+  pybind11_add_module(zeroerr_rmd_py
+    bindings/zeroerr_rmd.cpp
   )
-  target_compile_features(myactuator_rmd_py PUBLIC
+  target_compile_features(zeroerr_rmd_py PUBLIC
     cxx_std_17
   )
-  target_link_libraries(myactuator_rmd_py PUBLIC
-    myactuator_rmd
+  target_link_libraries(zeroerr_rmd_py PUBLIC
+    zeroerr_rmd
   )
 
   if(ament_cmake_FOUND)
     find_package(ament_cmake_python REQUIRED)
     ament_python_install_package(${PROJECT_NAME})
   endif()
-  install(TARGETS myactuator_rmd_py
+  install(TARGETS zeroerr_rmd_py
     DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME}
   )
 endif()
@@ -91,7 +89,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     )
     target_link_libraries(can_node PUBLIC
       Boost::program_options
-      myactuator_rmd
+      zeroerr_rmd
     )
   endif()
 
@@ -110,9 +108,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     cxx_std_17
   )
   target_compile_definitions(run_tests PUBLIC NDEBUG)
-  set(MYACTUATOR_RMD_TEST_LIBRARIES myactuator_rmd GTest::gmock GTest::gtest pthread)
+  set(ZEROERR_RMD_TEST_LIBRARIES zeroerr_rmd GTest::gmock GTest::gtest pthread)
   target_link_libraries(run_tests PUBLIC
-    ${MYACTUATOR_RMD_TEST_LIBRARIES}
+    ${ZEROERR_RMD_TEST_LIBRARIES}
   )
   gtest_discover_tests(run_tests
     TEST_SUFFIX .noArgs

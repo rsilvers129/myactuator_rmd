@@ -6,8 +6,8 @@
  *    Tobit Flatscher (github.com/2b-t)
 */
 
-#ifndef MYACTUATOR_RMD__TEST__ACTUATOR_ACTUATOR_MOCK_TEST
-#define MYACTUATOR_RMD__TEST__ACTUATOR_ACTUATOR_MOCK_TEST
+#ifndef ZEROERR_RMD__TEST__ACTUATOR_ACTUATOR_MOCK_TEST
+#define ZEROERR_RMD__TEST__ACTUATOR_ACTUATOR_MOCK_TEST
 #pragma once
 
 #include <cstdint>
@@ -16,12 +16,12 @@
 
 #include <gtest/gtest.h>
 
-#include "myactuator_rmd/driver/can_driver.hpp"
-#include "myactuator_rmd/actuator_interface.hpp"
+#include "zeroerr_rmd/driver/can_driver.hpp"
+#include "zeroerr_rmd/actuator_interface.hpp"
 #include "actuator_mock.hpp"
 
 
-namespace myactuator_rmd {
+namespace zeroerr_rmd {
   namespace test {
 
     /**\class ActuatorActuatorMockTest
@@ -59,8 +59,8 @@ namespace myactuator_rmd {
         void TearDown() override;
 
       protected:
-        myactuator_rmd::CanDriver driver_;
-        myactuator_rmd::ActuatorInterface actuator_;
+        zeroerr_rmd::CanDriver driver_;
+        zeroerr_rmd::ActuatorInterface actuator_;
         ActuatorMock actuator_mock_;
         std::thread mock_thread_;
     };
@@ -68,4 +68,4 @@ namespace myactuator_rmd {
   }
 }
 
-#endif // MYACTUATOR_RMD__TEST__ACTUATOR_ACTUATOR_MOCK_TEST
+#endif // ZEROERR_RMD__TEST__ACTUATOR_ACTUATOR_MOCK_TEST

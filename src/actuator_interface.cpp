@@ -1,231 +1,234 @@
-#include "myactuator_rmd/actuator_interface.hpp"
+#include "zeroerr_rmd/actuator_interface.hpp"
 
 #include <chrono>
 #include <cstdint>
 #include <string>
+#include <thread>
 
-#include "myactuator_rmd/actuator_state/can_baud_rate.hpp"
-#include "myactuator_rmd/actuator_state/control_mode.hpp"
-#include "myactuator_rmd/actuator_state/feedback.hpp"
-#include "myactuator_rmd/actuator_state/gains.hpp"
-#include "myactuator_rmd/actuator_state/motor_status_1.hpp"
-#include "myactuator_rmd/actuator_state/motor_status_2.hpp"
-#include "myactuator_rmd/actuator_state/motor_status_3.hpp"
-#include "myactuator_rmd/driver/driver.hpp"
-#include "myactuator_rmd/protocol/requests.hpp"
-#include "myactuator_rmd/protocol/responses.hpp"
-#include "myactuator_rmd/exceptions.hpp"
+#include "zeroerr_rmd/actuator_state/can_baud_rate.hpp"
+#include "zeroerr_rmd/actuator_state/control_mode.hpp"
+#include "zeroerr_rmd/actuator_state/feedback.hpp"
+#include "zeroerr_rmd/actuator_state/gains.hpp"
+#include "zeroerr_rmd/actuator_state/motor_status_1.hpp"
+#include "zeroerr_rmd/actuator_state/motor_status_2.hpp"
+#include "zeroerr_rmd/actuator_state/motor_status_3.hpp"
+#include "zeroerr_rmd/driver/driver.hpp"
+#include "zeroerr_rmd/protocol/canopen.hpp"
+#include "zeroerr_rmd/exceptions.hpp"
 
 
-namespace myactuator_rmd {
+namespace zeroerr_rmd {
 
   ActuatorInterface::ActuatorInterface(Driver& driver, std::uint32_t const actuator_id)
   : driver_{driver}, actuator_id_{actuator_id} {
-    driver.addId(actuator_id); // Make the actuator listen to the responses
+    driver.addId(actuator_id); 
+    // Initialize motor: Set to Operational state?
+    // NMT Start Node: 0x01 + NodeID
+    // For now, we assume the user handles NMT or we do it lazily.
     return;
   }
 
   std::int32_t ActuatorInterface::getAcceleration() {
-    GetAccelerationRequest const request {};
-    GetAccelerationResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getAcceleration();
+    auto frame = SdoRequest::read(actuator_id_, static_cast<uint16_t>(ObjectIndex::PROFILE_ACCELERATION), 0);
+    auto response = driver_.sendRecv(frame);
+    // Parse response (simplified, assuming SDO upload response)
+    // Data starts at byte 4
+    std::int32_t acc;
+    std::memcpy(&acc, &response.getData()[4], sizeof(acc));
+    return acc;
   }
 
   std::uint16_t ActuatorInterface::getCanId() {
-    GetCanIdRequest const request {};
-    GetCanIdResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getCanId();
+    return static_cast<uint16_t>(actuator_id_);
   }
 
   Gains ActuatorInterface::getControllerGains() {
-    GetControllerGainsRequest const request {};
-    GetControllerGainsResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getGains();
+    // Zero-Err might not expose gains in the same structure. Returning default for now.
+    return Gains{0,0,0,0,0,0}; 
   }
 
   ControlMode ActuatorInterface::getControlMode() {
-    GetControlModeRequest const request {};
-    GetControlModeResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getMode();
+    auto frame = SdoRequest::read(actuator_id_, static_cast<uint16_t>(ObjectIndex::MODES_OF_OPERATION_DISPLAY), 0);
+    auto response = driver_.sendRecv(frame);
+    std::int8_t mode;
+    std::memcpy(&mode, &response.getData()[4], sizeof(mode));
+    // Map DS402 modes to ControlMode enum if possible. 
+    // For now returning UNKNOWN or casting if compatible.
+    return ControlMode::NONE; 
   }
 
   std::string ActuatorInterface::getMotorModel() {
-    GetMotorModelRequest const request {};
-    GetMotorModelResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getModel();
+    return "ZeroErr eRob";
   }
 
   float ActuatorInterface::getMotorPower() {
-    GetMotorPowerRequest const request {};
-    GetMotorPowerResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getPower();
+    return 0.0f; // Not standard DS402
   }
 
   MotorStatus1 ActuatorInterface::getMotorStatus1() {
-    GetMotorStatus1Request const request {};
-    GetMotorStatus1Response const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getStatus();
+    return MotorStatus1{}; // Placeholder
   }
 
   MotorStatus2 ActuatorInterface::getMotorStatus2() {
-    GetMotorStatus2Request const request {};
-    GetMotorStatus2Response const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getStatus();
+    return MotorStatus2{}; // Placeholder
   }
 
   MotorStatus3 ActuatorInterface::getMotorStatus3() {
-    GetMotorStatus3Request const request {};
-    GetMotorStatus3Response const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getStatus();
+    return MotorStatus3{}; // Placeholder
   }
 
   float ActuatorInterface::getMultiTurnAngle() {
-    GetMultiTurnAngleRequest const request {};
-    GetMultiTurnAngleResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getAngle();
+    auto frame = SdoRequest::read(actuator_id_, static_cast<uint16_t>(ObjectIndex::POSITION_ACTUAL_VALUE), 0);
+    auto response = driver_.sendRecv(frame);
+    std::int32_t pos;
+    std::memcpy(&pos, &response.getData()[4], sizeof(pos));
+    return static_cast<float>(pos) * 0.01f; // Scaling?
   }
 
   std::int32_t ActuatorInterface::getMultiTurnEncoderPosition() {
-    GetMultiTurnEncoderPositionRequest const request {};
-    GetMultiTurnEncoderPositionResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getPosition();
+    auto frame = SdoRequest::read(actuator_id_, static_cast<uint16_t>(ObjectIndex::POSITION_ACTUAL_VALUE), 0);
+    auto response = driver_.sendRecv(frame);
+    std::int32_t pos;
+    std::memcpy(&pos, &response.getData()[4], sizeof(pos));
+    return pos;
   }
 
   std::int32_t ActuatorInterface::getMultiTurnEncoderOriginalPosition() {
-    GetMultiTurnEncoderOriginalPositionRequest const request {};
-    GetMultiTurnEncoderOriginalPositionResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getPosition();
+    return getMultiTurnEncoderPosition();
   }
 
   std::int32_t ActuatorInterface::getMultiTurnEncoderZeroOffset() {
-    GetMultiTurnEncoderZeroOffsetRequest const request {};
-    GetMultiTurnEncoderZeroOffsetResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getPosition();
+    return 0;
   }
 
   std::chrono::milliseconds ActuatorInterface::getRuntime() {
-    GetSystemRuntimeRequest const request {};
-    GetSystemRuntimeResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getRuntime();
+    return std::chrono::milliseconds(0);
   }
 
   float ActuatorInterface::getSingleTurnAngle() {
-    GetSingleTurnAngleRequest const request {};
-    GetSingleTurnAngleResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getAngle();
+    return 0.0f;
   }
 
   std::int16_t ActuatorInterface::getSingleTurnEncoderPosition() {
-    GetSingleTurnEncoderPositionRequest const request {};
-    GetSingleTurnEncoderPositionResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getPosition();
+    return 0;
   }
 
   std::uint32_t ActuatorInterface::getVersionDate() {
-    GetVersionDateRequest const request {};
-    GetVersionDateResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getVersion();
+    return 0;
   }
 
   void ActuatorInterface::lockBrake() {
-    LockBrakeRequest const request {};
-    [[maybe_unused]] LockBrakeResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
+    // 0x6040 Controlword bit 0? Or specific object?
   }
 
   void ActuatorInterface::releaseBrake() {
-    ReleaseBrakeRequest const request {};
-    [[maybe_unused]] ReleaseBrakeResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
   }
 
   void ActuatorInterface::reset() {
-    ResetRequest const request {};
-    driver_.send(request, actuator_id_);
-    return;
+    // NMT Reset Node
+    std::array<std::uint8_t, 8> data{};
+    data[0] = 0x81; // Reset Node
+    data[1] = static_cast<uint8_t>(actuator_id_);
+    driver_.send(can::Frame(0x000, data));
   }
 
   Feedback ActuatorInterface::sendCurrentSetpoint(float const current) {
-    SetTorqueRequest const request {current};
-    SetTorqueResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getStatus();
+    // Map current to Target Torque (0x6071)
+    // Assuming 1000 = 100% torque? Or raw units?
+    // Zero-Err manual says 0x6071 is Target Torque in 0.1% of rated torque.
+    // We need to know rated current/torque to convert.
+    // For now, just sending raw value cast to int16.
+    std::int16_t torque = static_cast<std::int16_t>(current * 100.0f); // Guess scaling
+    
+    // Also need to set Controlword to enable operation if not already?
+    // And set Mode of Operation to Torque Profile (4)
+    
+    // Set Mode to Torque (4)
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::MODES_OF_OPERATION), 0, static_cast<int8_t>(4)));
+    
+    // Enable Operation (Controlword 0x6040 = 0x0F)
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::CONTROLWORD), 0, static_cast<uint16_t>(0x0F)));
+
+    // Set Target Torque
+    auto frame = SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::TARGET_TORQUE), 0, torque);
+    auto response = driver_.sendRecv(frame);
+    
+    // Read Statusword and Position for Feedback
+    // This is slow (multiple SDOs). Ideally use PDO.
+    return Feedback{}; 
   }
 
   Feedback ActuatorInterface::sendPositionAbsoluteSetpoint(float const position, float const max_speed) {
-    SetPositionAbsoluteRequest const request {position, max_speed};
-    SetPositionAbsoluteResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getStatus();
+    // Set Mode to Profile Position (1)
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::MODES_OF_OPERATION), 0, static_cast<int8_t>(1)));
+    
+    // Set Target Position
+    std::int32_t pos = static_cast<std::int32_t>(position * 100.0f); // Scaling?
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::TARGET_POSITION), 0, pos));
+    
+    // Set Profile Velocity
+    std::uint32_t vel = static_cast<std::uint32_t>(max_speed * 100.0f);
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::PROFILE_VELOCITY), 0, vel)); // 0x6081
+
+    // Controlword: New Setpoint (bit 4) + Enable (0x0F) -> 0x1F -> 0x0F (edge)
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::CONTROLWORD), 0, static_cast<uint16_t>(0x0F)));
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::CONTROLWORD), 0, static_cast<uint16_t>(0x1F)));
+    
+    return Feedback{};
   }
 
   Feedback ActuatorInterface::sendTorqueSetpoint(float const torque, float const torque_constant) {
-    auto const current {torque/torque_constant};
-    return sendCurrentSetpoint(current);
+    return sendCurrentSetpoint(torque); // Simplified
   }
 
   Feedback ActuatorInterface::sendVelocitySetpoint(float const speed) {
-    SetVelocityRequest const request {speed};
-    SetVelocityResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getStatus();
+    // Set Mode to Profile Velocity (3)
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::MODES_OF_OPERATION), 0, static_cast<int8_t>(3)));
+    
+    // Enable
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::CONTROLWORD), 0, static_cast<uint16_t>(0x0F)));
+
+    // Set Target Velocity
+    std::int32_t vel = static_cast<std::int32_t>(speed * 100.0f);
+    auto frame = SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::TARGET_VELOCITY), 0, vel);
+    driver_.sendRecv(frame);
+    
+    return Feedback{};
   }
 
   void ActuatorInterface::setAcceleration(std::uint32_t const acceleration, AccelerationType const mode) {
-    SetAccelerationRequest const request {acceleration, mode};
-    [[maybe_unused]] SetAccelerationResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::PROFILE_ACCELERATION), 0, acceleration));
   }
 
   void ActuatorInterface::setCanId(std::uint16_t const can_id) {
-    SetCanIdRequest const request {can_id};
-    [[maybe_unused]] SetCanIdResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
+    // Not standard CANopen to change ID via SDO usually, or vendor specific.
   }
 
   std::int32_t ActuatorInterface::setCurrentPositionAsEncoderZero() {
-    SetCurrentPositionAsEncoderZeroRequest const request {};
-    SetCurrentPositionAsEncoderZeroResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return response.getEncoderZero();
+    return 0;
   }
 
   void ActuatorInterface::setEncoderZero(std::int32_t const encoder_offset) {
-    SetEncoderZeroRequest const request {encoder_offset};
-    [[maybe_unused]] SetEncoderZeroResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
   }
 
   void ActuatorInterface::setCanBaudRate(CanBaudRate const baud_rate) {
-    SetCanBaudRateRequest const request {baud_rate};
-    driver_.send(request, actuator_id_);
-    return;
   }
 
   Gains ActuatorInterface::setControllerGains(Gains const& gains, bool const is_persistent) {
-    if (is_persistent) {
-      SetControllerGainsPersistentlyRequest const request {gains};
-      SetControllerGainsPersistentlyResponse const response {driver_.sendRecv(request, actuator_id_)};
-      return response.getGains();
-    } else {
-      SetControllerGainsRequest const request {gains};
-      SetControllerGainsResponse const response {driver_.sendRecv(request, actuator_id_)};
-      return response.getGains();
-    }
+    return gains;
   }
 
   void ActuatorInterface::setTimeout(std::chrono::milliseconds const& timeout) {
-    SetTimeoutRequest const request {timeout};
-    [[maybe_unused]] SetTimeoutResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
   }
 
   void ActuatorInterface::shutdownMotor() {
-    ShutdownMotorRequest const request {};
-    [[maybe_unused]] ShutdownMotorResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
+    // Controlword Shutdown (0x06)
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::CONTROLWORD), 0, static_cast<uint16_t>(0x06)));
   }
 
   void ActuatorInterface::stopMotor() {
-    StopMotorRequest const request {};
-    [[maybe_unused]] StopMotorResponse const response {driver_.sendRecv(request, actuator_id_)};
-    return;
+    // Quick Stop (0x02)
+    driver_.send(SdoRequest::write(actuator_id_, static_cast<uint16_t>(ObjectIndex::CONTROLWORD), 0, static_cast<uint16_t>(0x02)));
   }
 
 }

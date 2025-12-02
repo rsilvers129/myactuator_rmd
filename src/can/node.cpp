@@ -1,4 +1,4 @@
-#include "myactuator_rmd/can/node.hpp"
+#include "zeroerr_rmd/can/node.hpp"
 
 #include <algorithm>
 #include <array>
@@ -24,12 +24,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "myactuator_rmd/can/exceptions.hpp"
-#include "myactuator_rmd/can/frame.hpp"
-#include "myactuator_rmd/can/utilities.hpp"
+#include "zeroerr_rmd/can/exceptions.hpp"
+#include "zeroerr_rmd/can/frame.hpp"
+#include "zeroerr_rmd/can/utilities.hpp"
 
 
-namespace myactuator_rmd {
+namespace zeroerr_rmd {
   namespace can {
 
     Node::Node(std::string const& ifname, std::chrono::microseconds const& send_timeout, std::chrono::microseconds const& receive_timeout,
@@ -74,7 +74,7 @@ namespace myactuator_rmd {
     }
 
     void Node::setSendTimeout(std::chrono::microseconds const& timeout) {
-      struct ::timeval const send_timeout {myactuator_rmd::toTimeval(timeout)};
+      struct ::timeval const send_timeout {zeroerr_rmd::toTimeval(timeout)};
       if (::setsockopt(socket_, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(&send_timeout), sizeof(struct ::timeval)) < 0) {
         throw SocketException(errno, std::generic_category(), "Interface '" + ifname_ + "' - Error setting socket timeout");
       }
@@ -82,7 +82,7 @@ namespace myactuator_rmd {
     }
 
     void Node::setRecvTimeout(std::chrono::microseconds const& timeout) {
-      struct ::timeval const recv_timeout {myactuator_rmd::toTimeval(timeout)};
+      struct ::timeval const recv_timeout {zeroerr_rmd::toTimeval(timeout)};
       if (::setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&recv_timeout), sizeof(struct ::timeval)) < 0) {
         throw SocketException(errno, std::generic_category(), "Interface '" + ifname_ + "' - Error setting socket timeout");
       }

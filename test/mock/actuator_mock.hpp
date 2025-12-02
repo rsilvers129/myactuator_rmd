@@ -6,8 +6,8 @@
  *    Tobit Flatscher (github.com/2b-t)
 */
 
-#ifndef MYACTUATOR_RMD__TEST__MOCK__ACTUATOR_MOCK
-#define MYACTUATOR_RMD__TEST__MOCK__ACTUATOR_MOCK
+#ifndef ZEROERR_RMD__TEST__MOCK__ACTUATOR_MOCK
+#define ZEROERR_RMD__TEST__MOCK__ACTUATOR_MOCK
 #pragma once
 
 #include <array>
@@ -16,11 +16,11 @@
 
 #include <gmock/gmock.h>
 
-#include "myactuator_rmd/protocol/responses.hpp"
+#include "zeroerr_rmd/protocol/responses.hpp"
 #include "actuator_adaptor.hpp"
 
 
-namespace myactuator_rmd {
+namespace zeroerr_rmd {
   namespace test {
 
     /**\class ActuatorMock
@@ -46,10 +46,10 @@ namespace myactuator_rmd {
         ActuatorMock& operator = (ActuatorMock&&) = default;
 
         // Register all the virtual methods of the adaptor as mock methods so we can control their behavior
-        MOCK_METHOD(myactuator_rmd::GetVersionDateResponse, getVersionDate, (), (const, override));
+        MOCK_METHOD(zeroerr_rmd::GetVersionDateResponse, getVersionDate, (), (const, override));
     };
 
   }
 }
 
-#endif // MYACTUATOR_RMD__TEST__MOCK__ACTUATOR_MOCK
+#endif // ZEROERR_RMD__TEST__MOCK__ACTUATOR_MOCK

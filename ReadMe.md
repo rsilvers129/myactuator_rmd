@@ -1,15 +1,15 @@
-# MyActuator RMD X-series CAN driver SDK
+# ZeroErr RMD X-series CAN driver SDK
 
 Author: [Tobit Flatscher](https://github.com/2b-t) (2023 - 2024)
 
-[![Tests](https://github.com/2b-t/myactuator_rmd/actions/workflows/run-tests.yml/badge.svg)](https://github.com/2b-t/myactuator_rmd/actions/workflows/run-tests.yml) [![codecov](https://codecov.io/gh/2b-t/myactuator_rmd/graph/badge.svg?token=VSDNKL4G4W)](https://codecov.io/gh/2b-t/myactuator_rmd) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ab6c938baaac477e98c69cdf84d61420)](https://app.codacy.com/gh/2b-t/myactuator_rmd/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) [![C++17 Standard](https://img.shields.io/badge/Standard-C++17-yellow.svg?style=flat&logo=c%2B%2B)](https://isocpp.org/std/the-standard) [![Python 3](https://img.shields.io/badge/Python-3-yellow.svg?style=flat&logo=python)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/2b-t/zeroerr_rmd/actions/workflows/run-tests.yml/badge.svg)](https://github.com/2b-t/zeroerr_rmd/actions/workflows/run-tests.yml) [![codecov](https://codecov.io/gh/2b-t/zeroerr_rmd/graph/badge.svg?token=VSDNKL4G4W)](https://codecov.io/gh/2b-t/zeroerr_rmd) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ab6c938baaac477e98c69cdf84d61420)](https://app.codacy.com/gh/2b-t/zeroerr_rmd/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) [![C++17 Standard](https://img.shields.io/badge/Standard-C++17-yellow.svg?style=flat&logo=c%2B%2B)](https://isocpp.org/std/the-standard) [![Python 3](https://img.shields.io/badge/Python-3-yellow.svg?style=flat&logo=python)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
 
 ## 0. Overview
-This repository holds a **CAN driver software development kit** (SDK) for the [**MyActuator RMD X actuator series**](https://www.myactuator.com/rmd-x) written in modern C++17 using [Linux's SocketCAN](https://docs.kernel.org/networking/can.html). The driver SDK is also exposed to Python through Python bindings generated with [pybind11](https://github.com/pybind/pybind11).
+This repository holds a **CAN driver software development kit** (SDK) for the [**ZeroErr RMD X actuator series**](https://www.zeroerr.com/rmd-x) written in modern C++17 using [Linux's SocketCAN](https://docs.kernel.org/networking/can.html). The driver SDK is also exposed to Python through Python bindings generated with [pybind11](https://github.com/pybind/pybind11).
 
-For the [`ros2_control` integration](https://control.ros.org/humble/index.html) please refer to [this repository](https://github.com/2b-t/myactuator_rmd_ros).
+For the [`ros2_control` integration](https://control.ros.org/humble/index.html) please refer to [this repository](https://github.com/2b-t/zeroerr_rmd_ros).
 
 
 
@@ -34,7 +34,7 @@ After having installed its dependencies you will have to install the driver SDK 
 
 ### 1.1 Building the C++ library
 
-For **building the C++ driver SDK** open a new terminal inside this folder and execute the following commands. On older versions of Linux the build might fail with the error message `error: 'const struct can_frame' has no member named 'len'` and you will have to apply the code modification discussed in [issue #5](https://github.com/2b-t/myactuator_rmd/issues/5).
+For **building the C++ driver SDK** open a new terminal inside this folder and execute the following commands. On older versions of Linux the build might fail with the error message `error: 'const struct can_frame' has no member named 'len'` and you will have to apply the code modification discussed in [issue #5](https://github.com/2b-t/zeroerr_rmd/issues/5).
 
 ```bash
 $ mkdir build
@@ -56,7 +56,7 @@ For **building and installing the Python bindings** for this SDK open a new term
 $ pip3 install .
 ```
 
-This will use the `setup.py` to invoke CMake and install the bindings as a C++ library. If you want to remove them again simply invoke `$ pip3 uninstall myactuator-rmd-py`.
+This will use the `setup.py` to invoke CMake and install the bindings as a C++ library. If you want to remove them again simply invoke `$ pip3 uninstall zeroerr-rmd-py`.
 
 ### 1.3 Building with ROS 2
 
@@ -80,7 +80,7 @@ In your CMake package you can then find the package and link to it as follows:
 cmake_minimum_required(VERSION 3.20)
 project(your_project)
 
-find_package(myactuator_rmd REQUIRED)
+find_package(zeroerr_rmd REQUIRED)
 
 add_executable(your_node
   src/main.cpp
@@ -89,7 +89,7 @@ target_compile_features(your_node PUBLIC
   cxx_std_17
 )
 target_link_libraries(your_node PUBLIC
-  myactuator_rmd::myactuator_rmd
+  zeroerr_rmd::zeroerr_rmd
 )
 ```
 
@@ -99,12 +99,12 @@ A minimal example for the `main.cpp` can be found below:
 #include <cstdlib>
 #include <iostream>
 
-#include <myactuator_rmd/myactuator_rmd.hpp>
+#include <zeroerr_rmd/zeroerr_rmd.hpp>
 
 
 int main() {
-  myactuator_rmd::CanDriver driver {"can0"};
-  myactuator_rmd::ActuatorInterface actuator {driver, 1};
+  zeroerr_rmd::CanDriver driver {"can0"};
+  zeroerr_rmd::ActuatorInterface actuator {driver, 1};
 
   std::cout << actuator.getVersionDate() << std::endl;
   std::cout << actuator.sendPositionAbsoluteSetpoint(180.0, 500.0) << std::endl;
@@ -123,7 +123,7 @@ int main() {
 $ python3
 Python 3.10.6 (main, Mar 10 2023, 10:55:28) [GCC 11.3.0] on linux
 Type "help", "copyright", "credits" or "license" for more information.
->>> import myactuator_rmd_py as rmd
+>>> import zeroerr_rmd_py as rmd
 >>> driver = rmd.CanDriver("can0")
 >>> actuator = rmd.ActuatorInterface(driver, 1)
 >>> actuator.getVersionDate()
@@ -133,9 +133,9 @@ temperature: 19, current: 0.1, shaft speed: 1, shaft angle: 0
 >>> actuator.shutdownMotor()
 ```
 
-In case you installed the package through ROS 2 the shared library will be located inside the `myactuator_rmd` package. Therefore you will need to import it with `import myactuator_rmd.myactuator_rmd_py as rmd`.
+In case you installed the package through ROS 2 the shared library will be located inside the `zeroerr_rmd` package. Therefore you will need to import it with `import zeroerr_rmd.zeroerr_rmd_py as rmd`.
 
-For more information you might also inspect the contents of the module inside Python 3 with `help(myactuator_rmd_py)`.
+For more information you might also inspect the contents of the module inside Python 3 with `help(zeroerr_rmd_py)`.
 
 
 

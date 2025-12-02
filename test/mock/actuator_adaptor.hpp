@@ -6,19 +6,19 @@
  *    Tobit Flatscher (github.com/2b-t)
 */
 
-#ifndef MYACTUATOR_RMD__TEST__MOCK__ACTUATOR_ADAPTOR
-#define MYACTUATOR_RMD__TEST__MOCK__ACTUATOR_ADAPTOR
+#ifndef ZEROERR_RMD__TEST__MOCK__ACTUATOR_ADAPTOR
+#define ZEROERR_RMD__TEST__MOCK__ACTUATOR_ADAPTOR
 #pragma once
 
 #include <cstdint>
 #include <string>
 
-#include "myactuator_rmd/driver/can_address_offset.hpp"
-#include "myactuator_rmd/driver/can_node.hpp"
-#include "myactuator_rmd/protocol/responses.hpp"
+#include "zeroerr_rmd/driver/can_address_offset.hpp"
+#include "zeroerr_rmd/driver/can_node.hpp"
+#include "zeroerr_rmd/protocol/responses.hpp"
 
 
-namespace myactuator_rmd {
+namespace zeroerr_rmd {
   namespace test {
 
     /**\class ActuatorAdaptor
@@ -26,7 +26,7 @@ namespace myactuator_rmd {
      *    Counter-part to the actuator and parent class of the mock that can be used for testing the driver
      *    over a (virtual) CAN network interface
     */
-    class ActuatorAdaptor: protected myactuator_rmd::CanNode<CanAddressOffset::response,CanAddressOffset::request> {
+    class ActuatorAdaptor: protected zeroerr_rmd::CanNode<CanAddressOffset::response,CanAddressOffset::request> {
       public:
         /**\fn handleRequest
          * \brief
@@ -42,7 +42,7 @@ namespace myactuator_rmd {
          *    The response that should be sent to the driver
         */
         [[nodiscard]]
-        virtual myactuator_rmd::GetVersionDateResponse getVersionDate() const = 0;
+        virtual zeroerr_rmd::GetVersionDateResponse getVersionDate() const = 0;
 
       protected:
         /**\fn ActuatorAdaptor
@@ -67,4 +67,4 @@ namespace myactuator_rmd {
   }
 }
 
-#endif // MYACTUATOR_RMD__TEST__MOCK__ACTUATOR_ADAPTOR
+#endif // ZEROERR_RMD__TEST__MOCK__ACTUATOR_ADAPTOR

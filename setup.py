@@ -54,6 +54,6 @@ class CMakeBuild(build_ext):
         )
 
 setup(
-    ext_modules=[CMakeExtension("myactuator_rmd_py")],
+    ext_modules=[CMakeExtension("zeroerr_rmd_py")],
     cmdclass={"build_ext": CMakeBuild}
 )

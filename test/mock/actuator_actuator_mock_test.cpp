@@ -5,11 +5,11 @@
 #include <string>
 #include <thread>
 
-#include "myactuator_rmd/driver/can_driver.hpp"
+#include "zeroerr_rmd/driver/can_driver.hpp"
 #include "actuator_mock.hpp"
 
 
-namespace myactuator_rmd {
+namespace zeroerr_rmd {
   namespace test {
 
     ActuatorActuatorMockTest::ActuatorActuatorMockTest(std::string const& ifname, std::uint32_t const actuator_id)
@@ -18,7 +18,7 @@ namespace myactuator_rmd {
     }
 
     void ActuatorActuatorMockTest::SetUp() {
-      mock_thread_ = std::thread(&myactuator_rmd::test::ActuatorMock::handleRequest, std::ref(actuator_mock_));
+      mock_thread_ = std::thread(&zeroerr_rmd::test::ActuatorMock::handleRequest, std::ref(actuator_mock_));
       return;
     }
 

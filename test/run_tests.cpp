@@ -1,7 +1,7 @@
 /**
  * \file run_tests.cpp
  * \mainpage
- *    Runs all unit and integration tests for the MyActuator RMD driver
+ *    Runs all unit and integration tests for the ZeroErr RMD driver
  * \author
  *    Tobit Flatscher (github.com/2b-t)
 */
