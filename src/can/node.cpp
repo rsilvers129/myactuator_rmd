@@ -141,7 +141,17 @@ namespace zeroerr_rmd {
     }
 
     void Node::write(Frame const& frame) {
-      return write(frame.getId(), frame.getData());
+      struct ::can_frame can_frame {};
+      can_frame.can_id = frame.getId();
+      can_frame.len = frame.getLen();
+      auto const& data = frame.getData();
+      std::copy(data.begin(), data.begin() + frame.getLen(), std::begin(can_frame.data));
+      if (::write(socket_, &can_frame, sizeof(struct ::can_frame)) != sizeof(struct ::can_frame)) {
+        std::ostringstream ss {};
+        ss << can_frame;
+        throw SocketException(errno, std::generic_category(), "Interface '" + ifname_ + "' - Could not write CAN frame '" + ss.str() + "'");
+      }
+      return;
     }
 
     void Node::write(std::uint32_t const can_id, std::array<std::uint8_t,8> const& data) {

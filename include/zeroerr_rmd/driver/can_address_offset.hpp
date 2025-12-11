@@ -21,8 +21,8 @@ namespace zeroerr_rmd {
   */
   class CanAddressOffset {
     public:
-      inline static constexpr std::uint32_t request {0x140};
-      inline static constexpr std::uint32_t response {0x240};
+      inline static constexpr std::uint32_t request {0x640};
+      inline static constexpr std::uint32_t response {0x5C0};
   };
 
 }

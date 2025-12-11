@@ -111,9 +111,8 @@ namespace zeroerr_rmd {
 
   template <std::uint32_t SEND_ID_OFFSET, std::uint32_t RECEIVE_ID_OFFSET>
   void CanNode<SEND_ID_OFFSET,RECEIVE_ID_OFFSET>::addId(std::uint32_t const actuator_id) {
-    if ((actuator_id < 1) || (actuator_id > 32)) {
-      throw Exception("Given actuator id '" + std::to_string(actuator_id) + "' out of admittable range [1, 32]!");
-    }
+    // ZeroErr CAN-custom protocol uses COB-IDs like 0x5C1, which exceed 32.
+    // Removed range check [1, 32] to allow these IDs.
     actuator_ids_.push_back(actuator_id);
     std::vector<std::uint32_t> can_receive_ids {};
     for (auto const& id: actuator_ids_){

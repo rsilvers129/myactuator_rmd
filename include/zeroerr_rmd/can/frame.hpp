@@ -26,14 +26,16 @@ namespace zeroerr_rmd {
       public:
         /**\fn Frame
          * \brief
-         *    Class constructor
+         *    Class constructor (8-byte default for backward compatibility)
          * 
          * \param[in] can_id
          *    The CAN id of the message
          * \param[in] data
          *    The data to be transmitted to the CAN node
+         * \param[in] len
+         *    The actual data length (1-8), defaults to 8
         */
-        constexpr Frame(std::uint32_t const can_id, std::array<std::uint8_t,8> const& data) noexcept;
+        constexpr Frame(std::uint32_t const can_id, std::array<std::uint8_t,8> const& data, std::uint8_t len = 8) noexcept;
         Frame() = delete;
         Frame(Frame const&) = default;
         Frame& operator = (Frame const&) = default;
@@ -59,14 +61,25 @@ namespace zeroerr_rmd {
         */
         [[nodiscard]]
         constexpr std::array<std::uint8_t,8> const& getData() const noexcept;
+        
+        /**\fn getLen
+         * \brief
+         *    Getter for data length
+         * 
+         * \return
+         *    The data length (1-8)
+        */
+        [[nodiscard]]
+        constexpr std::uint8_t getLen() const noexcept;
 
       protected:
         std::uint32_t can_id_;
         std::array<std::uint8_t,8> data_;
+        std::uint8_t len_;
     };
 
-    constexpr Frame::Frame(std::uint32_t const can_id, std::array<std::uint8_t,8> const& data) noexcept
-    : can_id_{can_id}, data_{data} {
+    constexpr Frame::Frame(std::uint32_t const can_id, std::array<std::uint8_t,8> const& data, std::uint8_t len) noexcept
+    : can_id_{can_id}, data_{data}, len_{len} {
       return;
     }
 
@@ -76,6 +89,10 @@ namespace zeroerr_rmd {
       
     constexpr std::array<std::uint8_t,8> const& Frame::getData() const noexcept {
       return data_;
+    }
+    
+    constexpr std::uint8_t Frame::getLen() const noexcept {
+      return len_;
     }
 
   }

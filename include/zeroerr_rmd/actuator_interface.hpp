@@ -221,6 +221,14 @@ namespace zeroerr_rmd {
       */
       [[nodiscard]]
       std::uint32_t getVersionDate();
+      
+      /**\fn getTargetState
+       * \brief
+       *    Reads the motion target state (0=Off, 1=On, 2=Moving, 3=Wait, 4=Achieved)
+       * \return
+       *    The target state
+       */
+      std::uint32_t getTargetState();
 
       /**\fn lockBrake
        * \brief
@@ -288,6 +296,66 @@ namespace zeroerr_rmd {
        *    Feedback control message containing actuator position, velocity, torque and temperature
       */
       Feedback sendVelocitySetpoint(float const speed);
+      
+      /**\fn initializePositionControl
+       * \brief
+       *    Initialize the actuator for position control
+       * 
+       * \param[in] profile_speed
+       *    The profile speed for the motion in degree per second
+       * \param[in] profile_accel
+       *    The profile acceleration in degree per second squared
+       * \param[in] profile_decel
+       *    The profile deceleration in degree per second squared
+       */
+      void initializePositionControl(float const profile_speed = 500.0, float const profile_accel = 1000.0, float const profile_decel = 1000.0);
+      
+      /**\fn updatePositionSetpoint
+       * \brief
+       *    Update the target absolute position. Call this cyclically.
+       * 
+       * \param[in] position
+       *    The target absolute position in degree
+       * \return
+       *    Feedback control message
+       */
+      Feedback updatePositionSetpoint(float const position);
+      
+      /**\fn initializeVelocityControl
+       * \brief
+       *    Initialize the actuator for velocity control
+       */
+      void initializeVelocityControl();
+      
+      /**\fn updateVelocitySetpoint
+       * \brief
+       *    Update the target velocity. Call this cyclically.
+       * 
+       * \param[in] velocity
+       *    The target velocity in degree per second
+       * \return
+       *    Feedback control message
+       */
+      Feedback updateVelocitySetpoint(float const velocity);
+      
+      /**\fn initializeTorqueControl
+       * \brief
+       *    Initialize the actuator for torque control
+       */
+      void initializeTorqueControl();
+      
+      /**\fn updateTorqueSetpoint
+       * \brief
+       *    Update the target torque. Call this cyclically.
+       * 
+       * \param[in] torque
+       *    The target torque in Nm
+       * \param[in] torque_constant
+       *    The motor's torque constant
+       * \return
+       *    Feedback control message
+       */
+      Feedback updateTorqueSetpoint(float const torque, float const torque_constant);
 
       /**\fn setAcceleration
        * \brief
@@ -380,6 +448,18 @@ namespace zeroerr_rmd {
     protected:
       Driver& driver_;
       std::uint32_t actuator_id_;
+      
+    private:
+      /**
+       * \brief Wait for and consume the response frame from the actuator
+       */
+      void waitForResponse();
+      
+      /**
+       * \brief Get current feedback (position, velocity, current)
+       * \return The current feedback state
+       */
+      Feedback getFeedback();
   };
 
 }
