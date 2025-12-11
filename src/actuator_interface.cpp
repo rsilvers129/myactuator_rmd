@@ -273,27 +273,28 @@ namespace zeroerr_rmd {
   }
 
   Feedback ActuatorInterface::sendVelocitySetpoint(float const speed) {
-    // ==========================================
-    // Velocity Control Mode Sequence
-    // ==========================================
+    // Initialize velocity control mode ONCE (first call only)
+    if (!velocity_mode_initialized_) {
+      // 1. Set operation mode to Velocity (2)
+      driver_.sendRecv(CanCustomRequest::write(actuator_id_, ParamIndex::OPERATION_MODE, 
+                                           static_cast<std::uint32_t>(OperationMode::VELOCITY)));
+      
+      // 2. Set control source to not use external
+      driver_.sendRecv(CanCustomRequest::write(actuator_id_, ParamIndex::CONTROL_SOURCE, 0u));
+      
+      // 3. Set analog quantity to internal
+      driver_.sendRecv(CanCustomRequest::write(actuator_id_, ParamIndex::ANALOG_QUANTITY_SOURCE, 0u));
+      
+      // 4. Enable motor
+      driver_.sendRecv(CanCustomRequest::write(actuator_id_, CmdIndex::ENABLE_MOTOR, 1u));
+      
+      velocity_mode_initialized_ = true;
+    }
     
-    // 1. Set operation mode to Velocity (2)
-    driver_.sendRecv(CanCustomRequest::write(actuator_id_, ParamIndex::OPERATION_MODE, 
-                                         static_cast<std::uint32_t>(OperationMode::VELOCITY)));
-    
-    // 2. Set control source to not use external
-    driver_.sendRecv(CanCustomRequest::write(actuator_id_, ParamIndex::CONTROL_SOURCE, 0u));
-    
-    // 3. Set analog quantity to internal
-    driver_.sendRecv(CanCustomRequest::write(actuator_id_, ParamIndex::ANALOG_QUANTITY_SOURCE, 0u));
-    
-    // 4. Set target speed (analog quantity) in counts/s
+    // Set target speed (analog quantity) in counts/s - this is the only frame needed per call
     std::int32_t speed_counts = static_cast<std::int32_t>(speed * ErobConstants::COUNTS_PER_DEGREE);
     driver_.sendRecv(CanCustomRequest::write(actuator_id_, ParamIndex::ANALOG_QUANTITY, 
                                          static_cast<std::uint32_t>(speed_counts)));
-    
-    // 5. Enable motor (if not already)
-    driver_.sendRecv(CanCustomRequest::write(actuator_id_, CmdIndex::ENABLE_MOTOR, 1u));
     
     // Read and return feedback
     return getFeedback();
@@ -358,11 +359,15 @@ namespace zeroerr_rmd {
   void ActuatorInterface::shutdownMotor() {
     // Disable motor (engages brake)
     driver_.sendRecv(CanCustomRequest::write(actuator_id_, CmdIndex::ENABLE_MOTOR, 0u));
+    // Reset mode flags so next sendVelocitySetpoint will re-initialize
+    velocity_mode_initialized_ = false;
   }
 
   void ActuatorInterface::stopMotor() {
     // Send stop motion command
     driver_.sendRecv(CanCustomRequest::command(actuator_id_, CmdIndex::STOP_MOTION));
+    // Reset velocity mode flag
+    velocity_mode_initialized_ = false;
   }
   
   void ActuatorInterface::waitForResponse() {

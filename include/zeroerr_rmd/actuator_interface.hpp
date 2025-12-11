@@ -460,6 +460,11 @@ namespace zeroerr_rmd {
        * \return The current feedback state
        */
       Feedback getFeedback();
+      
+      /**
+       * \brief Track if velocity control mode has been initialized
+       */
+      bool velocity_mode_initialized_ = false;
   };
 
 }
